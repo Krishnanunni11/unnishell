@@ -1,0 +1,96 @@
+
+body {
+margin: 0;
+background-color: black;
+color: #00ffaa;
+font-family: 'Courier New', monospace;
+overflow: hidden;
+}
+.terminal-container {
+max-width: 800px;
+margin: 5rem auto;
+box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
+border-radius: 0.5rem;
+overflow: hidden;
+position: relative;
+z-index: 1;
+}
+.terminal-header-bar {
+background: #0f172a;
+padding: 0.5rem;
+color: #00ffaa;
+font-weight: bold;
+text-align: center;
+border-bottom: 1px solid #00ffaa33;
+}
+.terminal {
+background: #000;
+padding: 1.5rem;
+position: relative;
+z-index: 2;
+display: flex;
+flex-direction: column;
+}
+.output {
+white-space: pre-wrap;
+max-height: 400px;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+scrollbar-width: thin;
+scrollbar-color: #00ffaa #111;
+}
+.output::-webkit-scrollbar {
+width: 8px;
+}
+.output::-webkit-scrollbar-track {
+background: #111;
+border-radius: 10px;
+}
+.output::-webkit-scrollbar-thumb {
+background: #00ffaa;
+border-radius: 10px;
+}
+.output::-webkit-scrollbar-thumb:hover {
+background: #00ffcc;
+}
+.output-line {
+margin-bottom: 0.5rem;
+}
+.input-area input {
+background: transparent;
+border: none;
+outline: none;
+color: #00ffaa;
+width: 100%;
+}
+.prompt::before {
+content: 'unni@terminal:$~ ';
+}
+canvas#matrix {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+z-index: 0;
+background: black;
+}
+.input-area {
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+.input-area input {
+background: transparent;
+border: none;
+outline: none;
+color: #00ffaa;
+width: 100%;
+font-family: 'Courier New', monospace;
+}
+
+.prompt::before {
+content: 'user@terminal:$~ ';
+white-space: pre;
+}

@@ -1,0 +1,310 @@
+<!---------THIS IS CREATED BY KRISHNANUNNI H PILLAI------------------------------>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UnniShell</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="shell_style.css">
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="terminal-container">
+    <div class="terminal-header-bar">💻 UnniLang Shell </div>
+    <div class="terminal">
+      <div id="output" class="output">
+        <div class="output-line">Welcome to UnniShell! Type 'help' to get started.</div>
+      </div>
+      <div class="input-area flex items-center">
+        <span class="prompt whitespace-pre"></span>
+        <input type="text" id="input" class="flex-1" autofocus />
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+  import { lessons } from './lessons.js';
+
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+
+  let buffer = [];
+  let variables = {};
+  let inSillyMode = false;
+
+  const helpText = `Available commands:
+  help         → Show available commands
+  about        → About the creator
+  unni         → Enter UnniLang editor
+  exit         → Exit UnniLang mode
+  clear        → Clear the terminal
+  lessons      → Show available lessons
+  lesson [n]   → View a specific lesson`;
+
+  const aboutText = `
+  👨‍💻 Created by Krishnanunni
+-------------------------------
+UnniLang Shell is a fun and interactive terminal simulation built for learning and entertainment. 
+It features:
+
+🌟 UnniLang is a custom, playful mini-language
+🎓 Interactive lessons to get you started
+
+Made with Html and JavaScript, this project is a love letter to creativity, curiosity, and the joy of learning.
+
+Thank you for spending your valuable time exploring my project!
+Happy coding....
+Have fun, and keep learning! 🚀
+
+Visit: 
+linkedin  : linkedin.com/in/krishnanunni-h-pillai-b87448327 
+ `;
+
+  function evaluateSillyLang(codeLines) {
+  const results = [];
+  const lines = [...codeLines];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+
+    if (line.startsWith('let ')) {
+      const [, expr] = line.split('let ');
+      const [varName, valueExpr] = expr.split('=').map(s => s.trim());
+      variables[varName] = evaluateExpr(valueExpr);
+      i++;
+    } else if (line.startsWith('unni.say ')) {
+      const msg = line.slice(9).replace(/\$(\w+)/g, (_, v) => variables[v] ?? 'undefined');
+      results.push(msg);
+      i++;
+    }
+    else if (line.startsWith('unni.repeat ')) {
+  const repeatMatch = line.match(/^unni\.repeat (\d+)\s*\{$/);
+  if (!repeatMatch) {
+    results.push("Oops!! Invalid repeat syntax.");
+    i++;
+    continue;
+  }
+
+  const times = parseInt(repeatMatch[1]);
+  const block = [];
+  i++;
+
+  while (i < lines.length && lines[i].trim() !== '}') {
+    block.push(lines[i]);
+    i++;
+  }
+  i++; // skip }
+
+  for (let r = 0; r < times; r++) {
+    results.push(...evaluateSillyLang(block));
+  }
+}
+    else if (line.startsWith('if ')) {
+      const conditionMatch = line.match(/^if (.+?) \{$/);
+      if (!conditionMatch) {
+        results.push("Oops!! Invalid if syntax!!");
+        i++;
+        continue;
+      }
+      
+
+      const condition = evaluateExpr(conditionMatch[1]);
+      const trueBlock = [];
+      const falseBlock = [];
+      i++;
+
+      // Collect true block
+      while (i < lines.length && lines[i].trim() !== '}') {
+        trueBlock.push(lines[i]);
+        i++;
+      }
+      i++; // Skip the closing }
+
+      // Check for optional else
+      if (i < lines.length && lines[i].trim() === 'else {') {
+        i++;
+        while (i < lines.length && lines[i].trim() !== '}') {
+          falseBlock.push(lines[i]);
+          i++;
+        }
+        i++; // Skip the closing }
+      }
+
+      if (condition) {
+        results.push(...evaluateSillyLang(trueBlock));
+      } else {
+        results.push(...evaluateSillyLang(falseBlock));
+      }
+    } else {
+      results.push('Unknown command: ' + line);
+      i++;
+    }
+  }
+
+  return results;
+}
+
+
+
+
+  function evaluateExpr(expr) {
+    try {
+      const customBools = expr.replace(/\b(yes)\b/g, 'true').replace(/\b(no)\b/g, 'false');
+      const replaced = customBools.replace(/\b(\w+)\b/g, (match) => {
+        if (!isNaN(match)) return match;
+        return variables.hasOwnProperty(match) ? variables[match] : match;
+      });
+      return eval(replaced);
+    } catch (err) {
+      return 'Error evaluating expression: ' + err.message;
+    }
+  }
+
+  function executeCommand(command) {
+    if (command === 'help') {
+      output.innerHTML = '';
+      printOutput(helpText);
+      return;
+    }
+    if (command === 'about') {
+      output.innerHTML = '';
+      printOutput(aboutText);
+      return;
+    }
+    if (command === 'unni') {
+      output.innerHTML = '';
+      printOutput("Entered UnniLang editor mode. \nGo through the unnilang syntax and examples type 'syntax'\nType UnniLang commands and 'run' to execute.\nType 'exit' to exit the editor");
+      document.querySelector('.prompt').textContent = 'unni> ';
+      inSillyMode = true;
+      return;
+    }
+    if (command === 'exit') {
+      output.innerHTML = '';
+      if (inSillyMode) {
+        printOutput("Exited UnniLang mode.");
+        document.querySelector('.prompt').textContent = ' ';
+        inSillyMode = false;
+      } else {
+        printOutput("You're not in UnniLang mode.");
+      }
+      return;
+    }
+    if (command === 'clear') {
+      output.innerHTML = '';
+      return;
+    }
+    if (command === 'lessons') {
+      output.innerHTML = '';
+      const list = lessons.map((l, i) => `${i + 1}. ${l.title}`).join('\n');
+      printOutput("Available Lessons:\n" + list + "\nType 'lesson [number]' to view a lesson.");
+      return;
+    }
+    if (command.startsWith('lesson ')) {
+      output.innerHTML = '';
+      const index = parseInt(command.split(' ')[1], 10) - 1;
+      if (!isNaN(index) && lessons[index]) {
+        printOutput(`📘 ${lessons[index].title}\n\n${lessons[index].content}`);
+      } else {
+        printOutput("Oops!! Lesson not found.");
+      }
+      return;
+    }
+    if (inSillyMode && command === 'run') {
+      const results = evaluateSillyLang(buffer);
+      for (const res of results) printOutput(res);
+      buffer = [];
+      return;
+    }
+    if (inSillyMode) {
+      buffer.push(command);
+      return;
+    }
+    printOutput('Unknown command: ' + command);
+  }
+
+  function printOutput(text) {
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const resultLine = document.createElement('div');
+      resultLine.className = 'output-line';
+      resultLine.textContent = line;
+      output.appendChild(resultLine);
+    }
+  }
+
+  input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const command = input.value.trim();
+    input.value = '';
+
+    const container = document.createElement('div');
+    container.className = 'output-line-group';
+
+    const userLine = document.createElement('div');
+    userLine.className = 'output-line';
+    userLine.textContent = `unni@terminal:$~ ${command}`;
+    container.appendChild(userLine);
+
+    const originalPrint = printOutput;
+    const tempLines = [];
+
+    // Override printOutput to capture lines temporarily
+    printOutput = function(text) {
+      const lines = text.split('\n');
+      for (const line of lines) {
+        const resultLine = document.createElement('div');
+        resultLine.className = 'output-line';
+        resultLine.textContent = line;
+        container.appendChild(resultLine);
+      }
+    };
+
+    executeCommand(command);
+
+    // Restore original printOutput
+    printOutput = originalPrint;
+
+    // Append everything together
+    output.appendChild(container);
+  }
+});
+
+
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+
+  const letters = '0101';
+  const fontSize = 14;
+  const columns = canvas.width / fontSize;
+  const drops = Array(Math.floor(columns)).fill(1);
+
+  function draw() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'rgba(0, 255, 170, 0.4)';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = letters[Math.floor(Math.random() * letters.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+
+      drops[i] += 1;
+    }
+  }
+
+  setInterval(draw, 70);
+</script>
+
+</body>
+</html>
+<!---------THIS IS CREATED BY KRISHNANUNNI H PILLAI------------------------------>
