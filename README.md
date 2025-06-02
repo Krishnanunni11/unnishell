@@ -32,7 +32,7 @@ unni.repeat 3 {
 }
 run
 
-# Available Commands
+Available Commands
   Command	                 Description
 ----------------------------------------------
 help	              Show list of available commands
