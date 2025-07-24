@@ -16,7 +16,8 @@ Powered by a custom mini-language called UnniLang, this project is a love letter
 => Built With HTML + JavaScript
 
 # Try It Out
-You can try the UnniShell directly in your browser. Type commands like:
+You can try the UnniShell directly in your browser: https://krishnanunni11.github.io/unnishell/
+Type commands like:
 
 
 help
